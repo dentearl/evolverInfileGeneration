@@ -39,11 +39,14 @@ all: rawData sequence annotations stats
 	@echo ALL WORK COMPLETE
 ##################################################
 
-stats: ${statsPath}/expanded_annots.gff
+stats: ${statsPath}/expanded_annots.gff ${statsPath}/annotstats.txt
 	@echo STATS COMPLETE
 ##################################################
 # This section takes the gtf files and creates the 
 # first set of stats files.
+${statsPath}/annotstats.txt: annots.gff seq.rev
+	evolver_evo -annotstats annots.gff -seq seq.rev -log ${statsPath}/annotstats.txt.tmp
+	mv $@.tmp $@
 ${statsPath}/expanded_annots.gff: ${statsPath}/introns.gff ${statsPath}/exons.gff ${rootPath}/root.annots.gff
 	cat $^ > $@.tmp
 	mv $@.tmp $@
