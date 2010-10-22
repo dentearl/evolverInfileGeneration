@@ -192,3 +192,7 @@ run "mv ${DIR}/stats/expanded_annots.gff.tmp ${DIR}/stats/expanded_annots.gff"
 run "evolver_evo -annotstats ${DIR}/annots.gff -seq ${DIR}/seq.rev -log ${DIR}/stats/annotstats.txt.tmp"
 run "mv ${DIR}/stats/annotstats.txt.tmp ${DIR}/stats/annotstats.txt"
 
+##############################
+# TEST
+
+run "evolver_evo -valgenes ${DIR}/seq.rev -annots ${DIR}/annots.gff"
