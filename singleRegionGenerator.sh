@@ -142,16 +142,16 @@ run "evolver_evo -xgff ${DIR}/ANNOTATIONS/genes.cpg.gff -gff_ns ${DIR}/SEQ/seq.n
 run "mv ${DIR}/ANNOTATIONS/genes.cpg.x.gff.tmp ${DIR}/ANNOTATIONS/genes.cpg.x.gff"
 
 SEQLEN=$(grep -a "  chr" ${DIR}/logs/seq.seqlength.log | awk '{ print $3 }')
-run "evolver_evo -genncces -excl_gff ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.genncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp -model ${DIR}/MODEL/model.txt"
+run "evolver_evo -seed $RANDOM -genncces -excl_gff ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.genncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp -model ${DIR}/MODEL/model.txt"
 run "mv ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp ${DIR}/ANNOTATIONS/genes.ncces.gff"
 
-run "evolver_evo -assncces ${DIR}/ANNOTATIONS/genes.ncces.gff -genes ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.assncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.ass.gff.tmp -model ${DIR}/MODEL/model.txt"
+run "evolver_evo -seed $RANDOM -assncces ${DIR}/ANNOTATIONS/genes.ncces.gff -genes ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.assncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.ass.gff.tmp -model ${DIR}/MODEL/model.txt"
 run "mv ${DIR}/ANNOTATIONS/genes.ncces.ass.gff.tmp ${DIR}/ANNOTATIONS/genes.ncces.ass.gff"
 
 cat ${DIR}/ANNOTATIONS/genes.ncces.ass.gff  ${DIR}/ANNOTATIONS/genes.x.gff.tmp > ${DIR}/ANNOTATIONS/genes.ces.gff.tmp
 run "mv ${DIR}/ANNOTATIONS/genes.ces.gff.tmp ${DIR}/ANNOTATIONS/genes.ces.gff"
 
-run "evolver_evo -assprobs ${DIR}/ANNOTATIONS/genes.ces.gff -log ${DIR}/logs/genes.assprobs.log -out ${DIR}/ANNOTATIONS/genes.ces.probs.gff.tmp"
+run "evolver_evo -seed $RANDOM -assprobs ${DIR}/ANNOTATIONS/genes.ces.gff -log ${DIR}/logs/genes.assprobs.log -out ${DIR}/ANNOTATIONS/genes.ces.probs.gff.tmp"
 run "mv ${DIR}/ANNOTATIONS/genes.ces.probs.gff.tmp ${DIR}/ANNOTATIONS/genes.ces.probs.gff"
 
 run "evolver_evo -fixcpgs ${DIR}/ANNOTATIONS/genes.cpg.x.gff -cds ${DIR}/ANNOTATIONS/genes.ces.gff -out ${DIR}/ANNOTATIONS/genes.fixedcpg.gff.tmp -log ${DIR}/ANNOTATIONS/genes.fixcpgs.log"
