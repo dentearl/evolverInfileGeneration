@@ -4,7 +4,7 @@ subsetRemapGP.py
 dent earl, dearl (a) soe ucsc edu
 19 Oct 2010
 
-Takes as it's input a .gp file, a --chr, --positionStart and
+Takes as its input a .gp file, a --chr, --positionStart and
 --positionEnd with positions [1..n] . It returns a parsed down
 .gp with only annotations that were in the range specified,
 and it remaps the annotations to positions [0..n).
@@ -13,7 +13,7 @@ So if you wanted to subset positions 101..150, and there
 was a gene at 110..120 it would become
 gene 9..19
 
-Confusing, I know, but it's how it is.
+Confusing, I know, but that's how it is.
 
 """
 from optparse import OptionParser
@@ -63,23 +63,22 @@ def transformCoordinates( data, options ):
         raise BadInputError('exonCount (%d)not equal to length of exonStarts (%d)' %( int(tData[-1]), len(exonStarts)))
     xFormExonStarts = []
     xFormExonEnds = []
-    for i in range(0, len(exonStarts)):
+    for i in range( 0, len(exonStarts) ):
         xFormExonStarts.append( str( int(exonStarts[ i ]) - options.startPosition ) )
         xFormExonEnds.append( str( int(exonEnds[ i ])   - options.startPosition ) )
     tData.append( ','.join( xFormExonStarts ) )
     tData.append( ','.join( xFormExonEnds ) )
     tData[ 10: ] = data[ 10: ]
-    
     return tData
 
 
-def readInput( options ):
+def readAndProcessInput( options ):
     pat = re.compile('chr(.+)')
     for line in sys.stdin:
         line = line.strip()
         data = line.split('\t')
         r = re.match( pat, data[ 1 ] )
-        if (r.group( 1 ) == options.chr) and ( int(data[ 3 ]) >= ( options.startPosition ) ) and ( int(data[ 4 ]) <= options.endPosition):
+        if ( r.group( 1 ) == options.chr) and ( int(data[ 3 ]) >= ( options.startPosition ) ) and ( int(data[ 4 ]) <= options.endPosition ):
             tData = transformCoordinates( data, options )
             print '%s' % '\t'.join( tData )
 
@@ -88,7 +87,7 @@ def main():
     initOptions( parser )
     ( options, args ) = parser.parse_args()
     checkOptions( options )
-    readInput( options )
+    readAndProcessInput( options )
 
 if __name__ == '__main__':
     main()
