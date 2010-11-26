@@ -111,7 +111,7 @@ def splitFiles( fa, annots, splitEvery, outDir ):
             if c == splitEvery:
                 c = 0
                 cNumLine = 0
-                anOut.write( '%s\n' % transformedAnnotsList[i-1] )
+                anOut.write( transformedAnnotsList[i-1] )
                 anOut.close()
                 faOut.write('\n')
                 faOut.close()
