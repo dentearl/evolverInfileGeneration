@@ -43,7 +43,7 @@ def checkOptions( options ):
         usage('specify annotation input, --annots.')
     if not options.outDir:
         options.outDir = os.getcwd()
-    if not os.path.isDir(options.outDir):
+    if not os.path.isdir( options.outDir ):
         usage('output directory "%s" is not a directory, --outDir.' % options.outDir )
     options.outDir = os.path.abspath( options.outDir )
 
