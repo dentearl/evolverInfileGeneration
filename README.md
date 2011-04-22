@@ -24,7 +24,7 @@ like to have all the infiles created.
 parallel option in make, <code>-j</code>, for a speedup.
 
 ##Dependencies
-*EVOLVER http://www.drive5.com/evolver/ such that all executables and scripts are preceded with <code>evolver_</code>, e.g. <code>evolver_evo</code>
-*The Kent source tree http://moma.ki.au.dk/genome-mirror/admin/git.html
-*evolverSimControl https://github.com/dentearl/evolverSimControl/ for the lib
-*TandemRepeatsFinder, trf http://tandem.bu.edu/trf/trf.html
+*EVOLVER: http://www.drive5.com/evolver/ such that all executables and scripts are preceded with <code>evolver_</code>, e.g. <code>evolver_evo</code>
+*The Kent source tree: http://moma.ki.au.dk/genome-mirror/admin/git.html
+*evolverSimControl: https://github.com/dentearl/evolverSimControl/ for the lib
+*TandemRepeatsFinder: trf http://tandem.bu.edu/trf/trf.html
