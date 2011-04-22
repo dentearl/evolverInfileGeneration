@@ -24,12 +24,13 @@
 # THE SOFTWARE.
 ##################################################
 
+import os
+import sys
 import unittest
-import os, sys
+
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.append(myBinDir + "/../../..")
 os.environ["PATH"] = myBinDir + "/../../../../bin:" + os.environ["PATH"]
-from sonLib.bioio import logger
 
 def writeFA_1( faPath ):
     fa = open( faPath, 'w')

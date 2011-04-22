@@ -47,12 +47,6 @@ import sys
 
 class BadInputError( ValueError ):
     pass
-
-def usage(s=None):
-    if s:
-        sys.stderr.write( 'ERROR: %s\n' % s )
-    sys.stderr.write( 'USAGE: '+ sys.argv[0] +' --chr 4 --startPosition 101 --endPosition 200 < mcgGenes.gp\n')
-    sys.exit(2)
     
 def initOptions(parser):
     parser.add_option('-c', '--chr',dest='chr',
@@ -62,13 +56,13 @@ def initOptions(parser):
     parser.add_option('-e', '--endPosition',dest='endPosition',
                       type='int', help='End position, [1..n] coordinates.')
 
-def checkOptions( options ):
+def checkOptions( parser, options ):
     if options.chr == None:
-        usage('specify chromosome, --chr')
+        parser.error('specify chromosome, --chr')
     if options.startPosition == None:
-        usage('specify --startPosition.')
+        parser.error('specify --startPosition.')
     if options.endPosition == None:
-        usage('specify --endPosition.')
+        parser.error('specify --endPosition.')
     options.startPosition -= 1
 
 def transformCoordinates( data, options ):
@@ -83,9 +77,11 @@ def transformCoordinates( data, options ):
     exonStarts = data[ 8 ].strip(',').split(',')
     exonEnds   = data[ 9 ].strip(',').split(',')
     if len(exonStarts) != len(exonEnds):
-        raise BadInputError( 'length of exonStarts (%d) not equal to length of exonEnds (%d)' %(len(exonStarts), len(exonEnds)) )
+        raise BadInputError( 'length of exonStarts (%d) not equal to length of exonEnds (%d)' %
+                             (len(exonStarts), len(exonEnds)) )
     if len(exonStarts) != int(tData[ -1 ]):
-        raise BadInputError('exonCount (%d)not equal to length of exonStarts (%d)' %( int(tData[-1]), len(exonStarts)))
+        raise BadInputError('exonCount (%d)not equal to length of exonStarts (%d)' %
+                            ( int(tData[-1]), len(exonStarts)) )
     xFormExonStarts = []
     xFormExonEnds = []
     for i in range( 0, len(exonStarts) ):
@@ -103,15 +99,24 @@ def readAndProcessInput( options ):
         line = line.strip()
         data = line.split('\t')
         r = re.match( pat, data[ 1 ] )
-        if ( r.group( 1 ) == options.chr) and ( int(data[ 3 ]) >= ( options.startPosition ) ) and ( int(data[ 4 ]) <= options.endPosition ):
+        if (( r.group( 1 ) == options.chr) and ( int(data[ 3 ]) >= ( options.startPosition ) ) and 
+            ( int(data[ 4 ]) <= options.endPosition )):
             tData = transformCoordinates( data, options )
             print '%s' % '\t'.join( tData )
 
 def main():
-    parser=OptionParser()
+    usage=('usage: %prog --chr=N --positionStart=X --positionEnd=Y\n'
+           'Takes as its input a .gp file, a --chr, --positionStart=X and\n'
+           '--positionEnd=Y with positions [X..Y] . It returns a parsed down\n'
+           '.gp with only annotations that were in the range specified,\n'
+           'and it remaps the annotations to positions [X-1..Y).\n\n'
+           'So if you wanted to subset positions 101..150, and there\n'
+           'was a gene at 110..120 it would become\n'
+           'gene 9..19')
+    parser=OptionParser(usage=usage)
     initOptions( parser )
     ( options, args ) = parser.parse_args()
-    checkOptions( options )
+    checkOptions( parser, options )
     readAndProcessInput( options )
 
 if __name__ == '__main__':

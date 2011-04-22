@@ -44,12 +44,6 @@ import sys
 
 MAX_FASTA_LINE_LENGTH = 50
 
-def usage(s=None):
-    if s:
-        sys.stderr.write( 'ERROR: %s\n' % s )
-    sys.stderr.write( 'USAGE: '+ sys.argv[0] +' --fasta seq.fa --annots annots.gff [--numFiles 2] [--outDir path/to/dir/ ]\n')
-    sys.exit(2)
-
 def initOptions(parser):
     parser.add_option('-f', '--fasta',dest='fasta',
                       help='fasta file input')
@@ -57,19 +51,19 @@ def initOptions(parser):
                       help='annotation file input.')
     parser.add_option('-n', '--numFiles',dest='numFiles',
                       type='int', default=2,
-                      help='number of files to split input into.')
+                      help='number of files to split input into. default=%default')
     parser.add_option('-o', '--outDir',dest='outDir',
                       help='directory in which to write output.')
 
-def checkOptions( options ):
+def checkOptions( parser, options ):
     if (options.fasta == None) or (not os.path.exists(options.fasta)):
-        usage('specify fasta input, --fasta')
+        parser.error('specify fasta input, --fasta')
     if (options.annots == None) or (not os.path.exists(options.annots)):
-        usage('specify annotation input, --annots.')
+        parser.error('specify annotation input, --annots.')
     if not options.outDir:
         options.outDir = os.getcwd()
     if not os.path.isdir( options.outDir ):
-        usage('output directory "%s" is not a directory, --outDir.' % options.outDir )
+        parser.error('output directory "%s" is not a directory, --outDir.' % options.outDir )
     options.outDir = os.path.abspath( options.outDir )
 
 def fastaLength( fa ):
@@ -151,10 +145,16 @@ def splitFiles( fa, annots, splitEvery, outDir ):
         os.remove( os.path.join(outDir, 'annotsOut%d.gff' % (i-1) ) )
         
 def main():
-    parser=OptionParser()
+    usage=('usage: %prog --fasta=file.fa --annots=file.gff --outDir=path/to/dir [options]\n'
+           'For cutting a paired fasta and gff into\n'
+           'smaller fastas and gffs, with correct new\n'
+           'coordinates for the gff files.\n\n'
+           'At the moment, annotations that range between\n'
+           'a split are simply dropped from the output.')
+    parser=OptionParser( usage=usage )
     initOptions( parser )
     ( options, args ) = parser.parse_args()
-    checkOptions( options )
+    checkOptions( parser, options )
     faLength = fastaLength( options.fasta )
     splitEvery = int( faLength / options.numFiles )
     splitFiles( options.fasta, options.annots, splitEvery, options.outDir )
