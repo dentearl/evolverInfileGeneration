@@ -1,14 +1,14 @@
 #evolverInfileGeneration
 
 Dent Earl, dearl@soe.ucsc.edu
+
 2009-2011
 
 ##Introduction
 This repo is intended to assist in the creation of an infile
 set for use with the EVOLVER suite of genome evolution tools
 written by Robert C. Edgar. George Asimenos, Serafim Batzoglou 
-and Arend Sidow.
-(http://www.drive5.com/evolver/)
+and Arend Sidow. http://www.drive5.com/evolver/
 
 ##Operation
 1. Copy the infileMakefile into a new directory where you would
@@ -24,8 +24,7 @@ like to have all the infiles created.
 parallel option in make, <code>-j</code>, for a speedup.
 
 ##Dependencies
-*EVOLVER http://www.drive5.com/evolver/ such that all executables and scripts
-are preceded with <code>evolver_</code>, e.g. <code>evolver_evo</code>
+*EVOLVER http://www.drive5.com/evolver/ such that all executables and scripts are preceded with <code>evolver_</code>, e.g. <code>evolver_evo</code>
 *The Kent source tree http://moma.ki.au.dk/genome-mirror/admin/git.html
 *evolverSimControl https://github.com/dentearl/evolverSimControl/ for the lib
 *TandemRepeatsFinder, trf http://tandem.bu.edu/trf/trf.html
