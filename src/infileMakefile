@@ -34,14 +34,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ##################################################
-SHELL:= /bin/bash
-rawPath:= raw
-intPath:= intermediates
-rootPath:= root
-logPath:= logs
-statsPath:= stats
-MODEL:= /cluster/home/dearl/evolver/myToy/gParams/model.txt
+SHELL:=/bin/bash -e
+export SHELLOPTS=pipefail
+projectDir:= .
+rawPath:= ${projectDir}/raw
+intPath:= ${projectDir}/intermediates
+rootPath:= ${projectDir}/root
+logPath:= ${projectDir}/logs
+statsPath:= ${projectDir}/stats
+MODEL:= ~/evolver/myToy/gParams/model.txt
 GENOME:= root #$(shell basename $$(pwd))
+.PHONY: all rawData sequence annotations stats
 .SECONDARY: # leave this blank to force make to keep intermediate files
 ##############################
 # MAKE EDITS TO THE chr VARIABLE TO CHANGE THE
@@ -50,184 +53,234 @@ GENOME:= root #$(shell basename $$(pwd))
 testSet:=NO
 ##############################
 ifeq ($(testSet), YES)
-	chrs:= 22_random
-	gtfs:= mgcGenes cpgIslandExt
+	chrs:= 22_random 19_random
 else
 	chrs:= 20 21 22
-	gtfs:= mgcGenes knownGene knownGeneOld2 cpgIslandExt ensGene
 endif
+gtfs:= mgcGenes knownGene knownGeneOld2 cpgIslandExt ensGene
 #
 # DO NOT EDIT BELOW THIS LINE
 ##################################################
 all: rawData sequence annotations stats
-	@echo ALL WORK COMPLETE
+	@echo All work complete.
 ##################################################
 
 stats: ${statsPath}/expanded_annots.gff ${statsPath}/annotstats.txt
-	@echo STATS COMPLETE
+	@echo Stats complete.
 ##################################################
 # This section takes the gtf files and creates the 
 # first set of stats files.
 ${statsPath}/annotstats.txt: annots.gff seq.rev
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -annotstats annots.gff -seq seq.rev -log ${statsPath}/annotstats.txt.tmp
 	mv $@.tmp $@
 ${statsPath}/expanded_annots.gff: ${statsPath}/introns.gff ${statsPath}/exons.gff ${rootPath}/root.annots.gff
+	@mkdir -p $(dir $@) ${logPath}
 	cat $^ > $@.tmp
 	mv $@.tmp $@
 ${statsPath}/introns.gff: ${statsPath}/exons.gff ${statsPath}/cds_annots.gff ${rootPath}/root.annots.gff
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_exons2introns.py $< > $@.tmp
 	mv $@.tmp $@
 ${statsPath}/exons.gff: ${statsPath}/cds_annots.gff ${rootPath}/root.annots.gff
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_cdsutr2exons.py $< > $@.tmp
 	mv $@.tmp $@
 ${statsPath}/cds_annots.gff: ${rootPath}/root.annots.gff ${statsPath}/merged_root.stats
-	egrep 'CDS|UTR' ${rootPath}/root.annots.gff > $@.tmp
+	@mkdir -p $(dir $@) ${logPath}
+	(egrep 'CDS|UTR' $< || true) | cat > $@.tmp
 	mv $@.tmp $@
 ${statsPath}/merged_root.stats:
+	@mkdir -p $(dir $@) ${logPath}
 	touch $@
 
-annotations: $(foreach chr, $(chrs), $(join ${intPath}/chr${chr},.genes.cov.gff)) annots.gff
-	@echo ANNOTATIONS COMPLETE
+annotations: annots.gff
+	@echo Annotations complete.
 ##################################################
 # This section takes the gtf files, corrects for the new
 # N-less coordinate space, merges the gtfs, and creates a 
 # single gtf annotation
-annots.gff: ${rootPath}/root.annots.gff
+annots.gff: ${rootPath}/root.annots.gff $(foreach chr, $(chrs), ${intPath}/chr${chr}.genes.cov.gff)
 	cp $< $@
-${rootPath}/root.annots.gff: $(foreach chr, $(chrs), $(join ${intPath}/chr${chr},.x.annots.gff)) #.genes.cov.gff))
+${rootPath}/root.annots.gff: $(foreach chr, $(chrs), ${intPath}/chr${chr}.x.annots.gff)
+	@mkdir -p $(dir $@) ${logPath}
 	cat $^ > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.genes.cov.gff: ${intPath}/chr%.gene_lengths
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_cvt -gffcover ${intPath}/chr$*.gene_lengths -out $@.tmp -log ${logPath}/chr$*.genecover.log
 	mv $@.tmp $@
 ${intPath}/chr%.gene_lengths: ${intPath}/chr%.x.annots.gff
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_gene_lengths.py $< > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.x.annots.gff: ${intPath}/chr%.unsorted.gff
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_sort.py $< > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.unsorted.gff: ${intPath}/chr%.fixedcpg.gff ${intPath}/chr%.ces.probs.gff ${intPath}/chr%.trfannots.gff
+	@mkdir -p $(dir $@) ${logPath}
 	cat $^ > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.fixedcpg.gff: ${intPath}/chr%.cpg.x.gff ${intPath}/chr%.ces.gff
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -fixcpgs $< -cds ${intPath}/chr$*.ces.gff -out $@.tmp -log ${logPath}/chr$*.fixcpgs.log
 	mv $@.tmp $@
 ${intPath}/chr%.ces.probs.gff: ${intPath}/chr%.ces.gff
-	evolver_evo -assprobs ${intPath}/chr$*.ces.gff -log ${logPath}/chr$*.assprobs.log -out $@.tmp
+	@mkdir -p $(dir $@) ${logPath}
+	evolver_evo -assprobs $< -log ${logPath}/chr$*.assprobs.log -out $@.tmp
 	mv $@.tmp $@
-${intPath}/chr%.ces.gff: ${intPath}/chr%.ncces.ass.gff
+${intPath}/chr%.ces.gff: ${intPath}/chr%.ncces.ass.gff ${intPath}/chr%.genes.x.gff.tmp
+	@mkdir -p $(dir $@) ${logPath}
 	cat $<  ${intPath}/chr$*.genes.x.gff.tmp > $@.tmp
 	mv $@.tmp $@
-${intPath}/chr%.ncces.ass.gff: ${intPath}/chr%.ncces.gff
-	SEQLEN=$$(grep -a "  chr$*" ${logPath}/chr$*.seqlength.log | awk '{ print $$3 }'); \
-	evolver_evo -assncces $< -genes ${intPath}/chr$*.genes.x.gff.tmp -length $$SEQLEN -log ${logPath}/chr$*.assncces.log -out $@.tmp -model $(MODEL)
+${intPath}/chr%.ncces.ass.gff: ${intPath}/chr%.ncces.gff ${intPath}/chr%.x.seq.rev ${intPath}/chr%.genes.x.gff.tmp
+	@mkdir -p $(dir $@) ${logPath}
+	SEQLEN=$$(grep -a "  chr$*" ${logPath}/chr$*.seqlength.log | awk '{ print $$3 }') && \
+		evolver_evo -assncces $< -genes ${intPath}/chr$*.genes.x.gff.tmp -length $$SEQLEN \
+		-log ${logPath}/chr$*.assncces.log -out $@.tmp -model $(MODEL)
 	mv $@.tmp $@
-${intPath}/chr%.ncces.gff: ${intPath}/chr%.genes.x.gff.tmp
-	SEQLEN=$$(grep -a "  chr$*" ${logPath}/chr$*.seqlength.log | awk '{ print $$3 }'); \
-	evolver_evo -genncces -excl_gff $< -length $$SEQLEN -log ${logPath}/chr$*.genncces.log -out $@.tmp -model $(MODEL)
+${intPath}/chr%.ncces.gff: ${intPath}/chr%.genes.x.gff.tmp ${intPath}/chr%.x.seq.rev
+	@mkdir -p $(dir $@) ${logPath}
+	SEQLEN=$$(grep -a "  chr$*" ${logPath}/chr$*.seqlength.log | awk '{ print $$3 }') && \
+		evolver_evo -genncces -excl_gff $< -length $$SEQLEN -log ${logPath}/chr$*.genncces.log \
+		-out $@.tmp -model $(MODEL)
 	mv $@.tmp $@
-${intPath}/chr%.cpg.x.gff: ${intPath}/chr%.cpg.gff
+${intPath}/chr%.cpg.x.gff: ${intPath}/chr%.cpg.gff ${intPath}/chr%.x.fa
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -xgff $< -gff_ns ${intPath}/chr$*.ns.gff -out $@.tmp -log ${logPath}/chr$*.xgffcpg.log
 	mv $@.tmp $@
 ${intPath}/chr%.cpg.gff: ${rawPath}/cpgIslandExt.gtf
-	grep -Pa '^chr$*\t' $< | sed -e 's/exon/island/' > $@.tmp
+	@mkdir -p $(dir $@) ${logPath}
+	(grep -Pa '^chr$*\t' $< | sed -e 's/exon/island/' || true ) > $@.tmp
 	mv $@.tmp $@
-${intPath}/chr%.genes.x.gff.tmp: ${intPath}/chr%.genes.x.gff
+${intPath}/chr%.genes.x.gff.tmp: ${intPath}/chr%.genes.x.gff ${intPath}/chr%.x.seq.rev
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -cvtannots $< -out $@.tmp -seq ${intPath}/chr$*.x.seq.rev -log ${logPath}/chr$*.cvtannots.log
 	mv $@.tmp $@
-${intPath}/chr%.genes.x.gff: ${intPath}/chr%.genes.gtf
+${intPath}/chr%.genes.x.gff: ${intPath}/chr%.genes.gtf ${intPath}/chr%.x.fa
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -xgff $< -gff_ns ${intPath}/chr$*.ns.gff -out $@.tmp -log ${logPath}/chr$*.xgff.log
 	mv $@.tmp $@
 ${intPath}/chr%.genes.gtf: ${intPath}/chr%.genes.unsorted.gtf
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_sort.py $< > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.genes.unsorted.gtf: $(foreach gtf, $(gtfs), $(join ${rawPath}/${gtf}, .gtf)) 
-	grep -Pa '^chr$*\t' ${rawPath}/knownGene.gtf     | evolver_gtfStopCodonMerger.py | sed -e "s/_id \"/_id \"ucsc./g"     >  $@.tmp
-	grep -Pa '^chr$*\t' ${rawPath}/mgcGenes.gtf      | evolver_gtfStopCodonMerger.py | sed -e "s/_id \"/_id \"mgc./g"      >> $@.tmp
-	grep -Pa '^chr$*\t' ${rawPath}/knownGeneOld2.gtf | evolver_gtfStopCodonMerger.py | sed -e "s/_id \"/_id \"oldknown./g" >> $@.tmp
-	grep -Pa '^chr$*\t' ${rawPath}/ensGene.gtf       | evolver_gtfStopCodonMerger.py | sed -e "s/_id \"/_id \"ens./g"      >> $@.tmp
+	@mkdir -p $(dir $@) ${logPath}
+	(grep -Pa '^chr$*\t' ${rawPath}/knownGene.gtf || true)     | evolver_gtfStopCodonMerger.py |\
+		sed -e "s/_id \"/_id \"ucsc./g"     >  $@.tmp
+	(grep -Pa '^chr$*\t' ${rawPath}/mgcGenes.gtf || true)      | evolver_gtfStopCodonMerger.py |\
+		sed -e "s/_id \"/_id \"mgc./g"      >> $@.tmp
+	(grep -Pa '^chr$*\t' ${rawPath}/knownGeneOld2.gtf || true) | evolver_gtfStopCodonMerger.py |\
+		sed -e "s/_id \"/_id \"oldknown./g" >> $@.tmp
+	(grep -Pa '^chr$*\t' ${rawPath}/ensGene.gtf || true)       | evolver_gtfStopCodonMerger.py |\
+		sed -e "s/_id \"/_id \"ens./g"      >> $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.trfannots.gff: ${intPath}/chr%.x.fa.dat.tmp
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_trf2gff.py $< > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.x.fa.dat.tmp: ${intPath}/chr%.x.fa
-	LOCALDIR=$$(pwd);\
-	simCtrl_wrapperTRF.py $$LOCALDIR/${intPath}/chr$*.x.fa 2 7 7 80 10 50 500 -d -h
+	@mkdir -p $(dir $@) ${logPath}
+	LOCALDIR=$$(pwd); \
+		simCtrl_wrapperTRF.py $$LOCALDIR/${intPath}/chr$*.x.fa 2 7 7 80 10 50 500 -d -h
 	mv ${intPath}/chr$*.x.fa.2.7.7.80.10.50.500.dat $@
 
-sequence: $(foreach chr, $(chrs), $(join ${intPath}/chr${chr},.x.seq.rev)) seq.rev
-	@echo SEQUENCES COMPLETE
+sequence: $(foreach chr, $(chrs), ${intPath}/chr${chr}.x.seq.rev) seq.rev
+	@echo Sequences complete.
 ##################################################
 # This section takes the fasta files, finds all the Ns
 # and then removes them, and then creates the .rev files.
 seq.rev: ${rootPath}/root.seq.rev
-	cp $< $@
+	cp $< $@.tmp
+	mv $@.tmp $@
 ${rootPath}/root.seq.rev: ${intPath}/root.fa
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_cvt -fromfasta $< -torev $@.tmp -genome ${GENOME}
 	mv $@.tmp $@
-${intPath}/root.fa: $(foreach chr, $(chrs), $(join ${intPath}/chr${chr},.x.fa))
+${intPath}/root.fa: $(foreach chr, $(chrs), ${intPath}/chr${chr}.x.fa)
+	@mkdir -p $(dir $@) ${logPath}
 	cat $^ > $@.tmp
 	mv $@.tmp $@
 ${intPath}/chr%.x.seq.rev: ${intPath}/chr%.x.fa
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_cvt -fromfasta $< -torev $@.tmp -genome ${GENOME} -log ${logPath}/chr$*.cvtrev.log
 	evolver_cvt -dumpchrids $@.tmp -log ${logPath}/chr$*.seqlength.log
 	mv $@.tmp $@
 ${intPath}/chr%.x.fa: ${rawPath}/chr%.fa
+	@mkdir -p $(dir $@) ${logPath}
 	evolver_evo -findns $< -out_x $@.tmp -out_gff ${intPath}/chr$*.ns.gff -label_x chr$* -log ${logPath}/chr$*.findns.log
 	mv $@.tmp $@
 
 rawData: $(foreach chr, $(chrs), $(join ${rawPath}/chr${chr}, .fa)) $(foreach gtf, $(gtfs), $(join ${rawPath}/${gtf}, .gtf))
-	@echo RAW DATA COMPLETE
+	@echo Raw data complete.
 ##################################################
 # This section extracts data from UCSC and prepares it
 # to be used to generate infiles.
 ${rawPath}/chr%.fa: ${rawPath}/chr%.fa.gz
+	@mkdir -p $(dir $@) ${logPath}
 	gunzip -c $<  > $@.tmp
 	mv $@.tmp $@
-${rawPath}/chr%.fa.gz: ${rawPath}/
+${rawPath}/chr%.fa.gz:
+	@mkdir -p $(dir $@) ${logPath}
 	curl http://hgdownload.cse.ucsc.edu/goldenPath/hg18/chromosomes/chr$*.fa.gz --create-dirs -o $@.tmp
 	mv $@.tmp $@
 ${rawPath}/:
-	mkdir -p ${rawPath} ${logPath} ${intPath} ${rootPath} ${statsPath}
+	@mkdir -p $(dir $@) ${logPath}
+	@mkdir -p ${logPath} ${intPath} ${rootPath} ${statsPath}
 ${rawPath}/%.gtf: ${rawPath}/%.gp
+	@mkdir -p $(dir $@) ${logPath}
 	genePredToGtf file $< $@.tmp
 	mv $@.tmp $@
-ifeq ($(testSet),YES)
+# ifeq ($(testSet),YES)
+# ${rawPath}/mgcGenes.gp:
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	hgsql -Ne 'select * from mgcGenes' hg18 | cut -f 2- | (grep -a 'chr22_random' || true ) > $@.tmp
+# 	mv $@.tmp $@
+# ${rawPath}/knownGene.gp:
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	touch $@
+# ${rawPath}/knownGeneOld2.gp:
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	touch $@
+# ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	bedToGenePred $< $@.tmp
+# 	mv $@.tmp $@
+# ${rawPath}/cpgIslandExt.bed: 
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	hgsql -Ne 'select * from cpgIslandExt' hg18 |  cut -f 1-4 | (grep -a 'chr22_random' || true) > $@.tmp
+# 	mv $@.tmp $@
+# ${rawPath}/ensGene.gp:
+# 	@mkdir -p $(dir $@) ${logPath}
+# 	touch $@
+# else
 ${rawPath}/mgcGenes.gp:
-	hgsql -Ne 'select * from mgcGenes' hg18 | cut -f 2- | grep -a 'chr22_random' > $@.tmp
-	mv $@.tmp $@
-${rawPath}/knownGene.gp:
-	touch $@
-${rawPath}/knownGeneOld2.gp:
-	touch $@
-${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
-	bedToGenePred $< $@.tmp
-	mv $@.tmp $@
-${rawPath}/cpgIslandExt.bed: 
-	hgsql -Ne 'select * from cpgIslandExt' hg18 |  cut -f 1-4 | grep -a 'chr22_random'> $@.tmp
-	mv $@.tmp $@
-${rawPath}/ensGene.gp:
-	touch $@
-else
-${rawPath}/mgcGenes.gp:
+	@mkdir -p $(dir $@) ${logPath}
 	hgsql -Ne 'select * from mgcGenes' hg18 | cut -f 2- > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGene.gp:
+	@mkdir -p $(dir $@) ${logPath}
 	hgsql -Ne 'select * from knownGene' hg18 | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGeneOld2.gp:
+	@mkdir -p $(dir $@) ${logPath}
 	hgsql -Ne 'select * from knownGeneOld2' hg18 | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
+	@mkdir -p $(dir $@) ${logPath}
 	bedToGenePred $< $@.tmp
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.bed: 
+	@mkdir -p $(dir $@) ${logPath}
 	hgsql -Ne 'select * from cpgIslandExt' hg18 |  cut -f 1-4 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/ensGene.gp:
+	@mkdir -p $(dir $@) ${logPath}
 	hgsql -Ne 'select * from ensGene' hg18 | cut -f 2- > $@.tmp
 	mv $@.tmp $@
-endif
+#endif
 
 clean:
-	rm -rf ${rawPath}/ ${logPath}/ ${intPath}/ ${rootPath}/ ${statsPath}/ seq.rev
+	rm -rf ${rawPath}/ ${logPath}/ ${intPath}/ ${rootPath}/ ${statsPath}/ seq.rev annots.gff
