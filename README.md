@@ -11,11 +11,11 @@ written by Robert C. Edgar. George Asimenos, Serafim Batzoglou
 and Arend Sidow. http://www.drive5.com/evolver/
 
 ##Operation
-1. Copy the infileMakefile into a new directory where you would
+1. Copy the <code>src/infileMakefile</code> into a new directory where you would
 like to have all the infiles created.
-2. Edit the infileMakefile line 57 from what you see below:
+2. Edit the chromosomes on line 58 from what you see below:
 
-    chrs:= 20 21 22
+    <code>chrs:= 20 21 22</code>
 
 3. To **test** type <code>make -f infileMakefile testSet=YES</code>
 4. To run type <code>make -f infileMakefile</code>
