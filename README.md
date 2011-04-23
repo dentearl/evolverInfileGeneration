@@ -23,8 +23,14 @@ like to have all the infiles created.
 **Pro tip:** The Makefile has been written so that you can use the 
 parallel option in make, <code>-j</code>, for a speedup, provided you have a extra processors to spare.
 
+##Extras
+* singleRegionGenerator.sh - A shrunken down version of <code>infileMakefile</code>. For when you don't want a full chromosome, but just a small piece of one. Used in a publication.
+* splitEvolverInfiles.py - Used to cut a paired FASTA and GFF into smaller FASTAs and GFFs with correct new coordinates for the GFF files.
+* testSplitEvolverInfiles.py - unittest for splitEvolverInfiles.py, invoke with <code>python testSplitEvolverInfiles.py --verbose</code>
+* subsetRemapGP.py - Takes a .gp (genpred) file and arguments to define a subsetted region and returns just the subsetted region with all elements' coordinates transformed to the subset, in .gp format.
+
 ##Dependencies
 * EVOLVER: http://www.drive5.com/evolver/ such that all executables and scripts are preceded with <code>evolver_</code>, e.g. <code>evolver_evo</code>
-* The Kent source tree: http://moma.ki.au.dk/genome-mirror/admin/git.html
+* The UCSC Genome Browser Kent source tree: http://genome.ucsc.edu/admin/git.html for some utilities used in the infileMakefile
 * evolverSimControl: https://github.com/dentearl/evolverSimControl/ for the lib
 * TandemRepeatsFinder: trf http://tandem.bu.edu/trf/trf.html
