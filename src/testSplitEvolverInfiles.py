@@ -77,7 +77,7 @@ class VerifyKnownInput( unittest.TestCase ):
         writeAN_1( anPath )
         faLength = SEI.fastaLength( faPath )
         splitEvery = int( faLength / 2 )
-        SEI.splitFiles( faPath, anPath, splitEvery, 'temp_testFiles' )
+        SEI.splitFiles( faPath, anPath, splitEvery, 'temp_testFiles', 50 )
         (faOut0, faOut1, anOut0, anOut1) = ('', '', '', '')
         faFiles = [ faOut0, faOut1 ]
         anFiles = [ anOut0, anOut1 ]
@@ -94,7 +94,7 @@ class VerifyKnownInput( unittest.TestCase ):
             anFiles[i].close()
             
         splitEvery = int( faLength / 3 )
-        SEI.splitFiles( faPath, anPath, splitEvery, 'temp_testFiles' )
+        SEI.splitFiles( faPath, anPath, splitEvery, 'temp_testFiles', 50 )
         (faOut2, faOut3, anOut2, anOut3) = ('', '', '', '')
         faFiles = [ faOut0, faOut1, faOut2, faOut3 ]
         anFiles = [ anOut0, anOut1, anOut2, anOut3 ]

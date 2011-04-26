@@ -42,8 +42,6 @@ import os
 import re
 import sys
 
-MAX_FASTA_LINE_LENGTH = 50
-
 def initOptions(parser):
     parser.add_option('-f', '--fasta',dest='fasta',
                       help='fasta file input')
@@ -54,17 +52,22 @@ def initOptions(parser):
                       help='number of files to split input into. default=%default')
     parser.add_option('-o', '--outDir',dest='outDir',
                       help='directory in which to write output.')
+    parser.add_option('--maxLineLength', dest='maxLineLength',
+                      default=50, type='int',
+                      help='Length of the fasta output lines. default=%default')
 
 def checkOptions( parser, options ):
-    if (options.fasta == None) or (not os.path.exists(options.fasta)):
+    if options.fasta is None or not os.path.exists(options.fasta):
         parser.error('specify fasta input, --fasta')
-    if (options.annots == None) or (not os.path.exists(options.annots)):
+    if options.annots is None or not os.path.exists(options.annots):
         parser.error('specify annotation input, --annots.')
     if not options.outDir:
         options.outDir = os.getcwd()
     if not os.path.isdir( options.outDir ):
         parser.error('output directory "%s" is not a directory, --outDir.' % options.outDir )
     options.outDir = os.path.abspath( options.outDir )
+    if maxLineLength < 1:
+        parser.error('--maxLineLength < 1. %d is not a valid value.' % options.maxLineLength)
 
 def fastaLength( fa ):
     f = open(fa)
@@ -107,7 +110,7 @@ def splitTransformAnnots( annots, splitEvery ):
     aList.append( thisSet )
     return aList
 
-def splitFiles( fa, annots, splitEvery, outDir ):
+def splitFiles( fa, annots, splitEvery, outDir, maxLineLength ):
     i = 0 # i is the number of the current output file
     c = 0 # c is the total number of characters processed so far
     ( faOut, anOut, i ) = newOuts( outDir, i )
@@ -124,7 +127,7 @@ def splitFiles( fa, annots, splitEvery, outDir ):
             faOut.write(l)
             c += 1
             cNumLine += 1
-            if cNumLine == MAX_FASTA_LINE_LENGTH:
+            if cNumLine == maxLineLength:
                 faOut.write('\n')
                 cNumLine = 0
             if c == splitEvery:
@@ -157,7 +160,7 @@ def main():
     checkOptions( parser, options )
     faLength = fastaLength( options.fasta )
     splitEvery = int( faLength / options.numFiles )
-    splitFiles( options.fasta, options.annots, splitEvery, options.outDir )
+    splitFiles( options.fasta, options.annots, splitEvery, options.outDir, options.maxLineLength )
     
 
 if __name__ == '__main__':
