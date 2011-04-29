@@ -57,11 +57,11 @@ def initOptions(parser):
                       type='int', help='End position, [1..n] coordinates.')
 
 def checkOptions( parser, options ):
-    if options.chr == None:
+    if options.chr is None:
         parser.error('specify chromosome, --chr')
-    if options.startPosition == None:
+    if options.startPosition is None:
         parser.error('specify --startPosition.')
-    if options.endPosition == None:
+    if options.endPosition is None:
         parser.error('specify --endPosition.')
     options.startPosition -= 1
 
@@ -105,17 +105,17 @@ def readAndProcessInput( options ):
             print '%s' % '\t'.join( tData )
 
 def main():
-    usage=('usage: %prog --chr=N --positionStart=X --positionEnd=Y\n'
-           'Takes as its input a .gp file, a --chr, --positionStart=X and\n'
-           '--positionEnd=Y with positions [X..Y] . It returns a parsed down\n'
-           '.gp with only annotations that were in the range specified,\n'
-           'and it remaps the annotations to positions [X-1..Y).\n\n'
-           'So if you wanted to subset positions 101..150, and there\n'
-           'was a gene at 110..120 it would become\n'
-           'gene 9..19')
+    usage=( 'usage: %prog --chr=N --positionStart=X --positionEnd=Y\n'
+            'Takes as its input a .gp file, a --chr, --positionStart=X and\n'
+            '--positionEnd=Y with positions [X..Y] . It returns a parsed down\n'
+            '.gp with only annotations that were in the range specified,\n'
+            'and it remaps the annotations to positions [X-1..Y).\n\n'
+            'So if you wanted to subset positions 101..150, and there\n'
+            'was a gene at 110..120 it would become\n'
+            'gene 9..19' )
     parser=OptionParser(usage=usage)
     initOptions( parser )
-    ( options, args ) = parser.parse_args()
+    options, args = parser.parse_args()
     checkOptions( parser, options )
     readAndProcessInput( options )
 
