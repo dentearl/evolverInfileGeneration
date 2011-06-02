@@ -72,7 +72,7 @@ stats: ${statsPath}/expanded_annots.gff ${statsPath}/annotstats.txt
 # first set of stats files.
 ${statsPath}/annotstats.txt: annots.gff seq.rev
 	@mkdir -p $(dir $@) ${logPath}
-	evolver_evo -annotstats annots.gff -seq seq.rev -log ${statsPath}/annotstats.txt.tmp
+	evolver_evo -annotstats annots.gff -seq seq.rev -log $@.tmp
 	mv $@.tmp $@
 ${statsPath}/expanded_annots.gff: ${statsPath}/introns.gff ${statsPath}/exons.gff ${rootPath}/root.annots.gff
 	@mkdir -p $(dir $@) ${logPath}
