@@ -1,2 +1,4 @@
 bin/*
 *pyc
+__init__.py
+temp_testFiles/
