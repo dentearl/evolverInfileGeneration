@@ -200,7 +200,7 @@ run "cp ${DIR}/ANNOTATIONS/root.annots.gff ${DIR}/annots.gff"
 # STATS
 mkdir -p ${DIR}/stats
 
-touch ${DIR}/stats/merged_root.stats
+touch ${DIR}/stats/merged_root.stats.txt
 egrep 'CDS|UTR' ${DIR}/ANNOTATIONS/root.annots.gff > ${DIR}/stats/cds_annots.gff.tmp
 run "mv ${DIR}/stats/cds_annots.gff.tmp ${DIR}/stats/cds_annots.gff"
 
