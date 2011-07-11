@@ -87,11 +87,14 @@ ${statsPath}/exons.gff: ${statsPath}/cds_annots.gff ${rootPath}/root.annots.gff
 	@mkdir -p $(dir $@) ${logPath}
 	evolver_gff_cdsutr2exons.py $< > $@.tmp
 	mv $@.tmp $@
-${statsPath}/cds_annots.gff: ${rootPath}/root.annots.gff ${statsPath}/merged_root.stats.txt
+${statsPath}/cds_annots.gff: ${rootPath}/root.annots.gff ${statsPath}/merged_root.stats.txt ${statsPath}/merged_branch.stats.txt
 	@mkdir -p $(dir $@) ${logPath}
 	(egrep 'CDS|UTR' $< || true) | cat > $@.tmp
 	mv $@.tmp $@
 ${statsPath}/merged_root.stats.txt:
+	@mkdir -p $(dir $@) ${logPath}
+	touch $@
+${statsPath}/merged_branch.stats.txt:
 	@mkdir -p $(dir $@) ${logPath}
 	touch $@
 
