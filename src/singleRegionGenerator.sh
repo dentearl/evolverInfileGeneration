@@ -58,10 +58,14 @@ run(){
 }
 runTrf(){
     # trf has a reversed returncode setup.
-    echo "$1"
-    $1
+    # $1 is the directory to run in
+    # $2 is the command
+    echo "cd $1"
+    cd $1
+    echo "$2"
+    $2
     if [ $? -ne 1 ];then
-        echo "ERROR: '$1' failed with status $?"
+        echo "ERROR: '$2' failed with status $?"
         exit 1
     fi
 }
@@ -144,7 +148,7 @@ run "cp ${DIR}/SEQ/root.seq.rev ${DIR}/seq.rev"
 ##############################
 # ANNOTATIONS
 
-runTrf "trf ${DIR}/SEQ/seq.x.fa 2 7 7 80 10 50 500 -d -h"
+runTrf "${DIR}/SEQ/" "trf seq.x.fa 2 7 7 80 10 50 500 -d -h"
 echo ' '
 run "mv ${DIR}/SEQ/seq.x.fa.2.7.7.80.10.50.500.dat ${DIR}/SEQ/seq.x.fa.dat.tmp"
 
@@ -174,7 +178,7 @@ run "mv ${DIR}/ANNOTATIONS/genes.cpg.gff.tmp ${DIR}/ANNOTATIONS/genes.cpg.gff"
 run "evolver_evo -xgff ${DIR}/ANNOTATIONS/genes.cpg.gff -gff_ns ${DIR}/SEQ/seq.ns.gff -out ${DIR}/ANNOTATIONS/genes.cpg.x.gff.tmp -log ${DIR}/logs/genes.xgffcpg.log"
 run "mv ${DIR}/ANNOTATIONS/genes.cpg.x.gff.tmp ${DIR}/ANNOTATIONS/genes.cpg.x.gff"
 
-SEQLEN=$(grep -a "  chr" ${DIR}/logs/seq.seqlength.log | awk '{ print $3 }')
+SEQLEN=$(grep -a "  $LABEL" ${DIR}/logs/seq.seqlength.log | awk '{ print $3 }')
 run "evolver_evo -seed $RANDOM -genncces -excl_gff ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.genncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp -model ${DIR}/MODEL/model.txt"
 run "mv ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp ${DIR}/ANNOTATIONS/genes.ncces.gff"
 
