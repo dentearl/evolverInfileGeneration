@@ -66,7 +66,7 @@ def checkOptions(parser, options):
     if not os.path.isdir(options.outDir):
         parser.error('output directory "%s" is not a directory, --outDir.' % options.outDir)
     options.outDir = os.path.abspath(options.outDir)
-    if maxLineLength < 1:
+    if options.maxLineLength < 1:
         parser.error('--maxLineLength < 1. %d is not a valid value.' % options.maxLineLength)
 
 def fastaLength(fa):
