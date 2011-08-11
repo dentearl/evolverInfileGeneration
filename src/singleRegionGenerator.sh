@@ -56,6 +56,15 @@ run(){
         exit 1
     fi
 }
+runTrf(){
+    # trf has a reversed returncode setup.
+    echo "$1"
+    $1
+    if [ $? -ne 1 ];then
+        echo "ERROR: '$1' failed with status $?"
+        exit 1
+    fi
+}
 # check number of arguments
 if [ $# -ne 2 ];then
     usage
@@ -135,7 +144,7 @@ run "cp ${DIR}/SEQ/root.seq.rev ${DIR}/seq.rev"
 ##############################
 # ANNOTATIONS
 
-run "simCtrl_wrapperTRF.py ${DIR}/SEQ/seq.x.fa 2 7 7 80 10 50 500 -d -h"
+runTrf "trf ${DIR}/SEQ/seq.x.fa 2 7 7 80 10 50 500 -d -h"
 echo ' '
 run "mv ${DIR}/SEQ/seq.x.fa.2.7.7.80.10.50.500.dat ${DIR}/SEQ/seq.x.fa.dat.tmp"
 
@@ -201,7 +210,6 @@ run "cp ${DIR}/ANNOTATIONS/root.annots.gff ${DIR}/annots.gff"
 mkdir -p ${DIR}/stats
 
 touch ${DIR}/stats/merged_root.stats.txt
-touch ${DIR}/stats/merged_branch.stats.txt
 egrep 'CDS|UTR' ${DIR}/ANNOTATIONS/root.annots.gff > ${DIR}/stats/cds_annots.gff.tmp
 run "mv ${DIR}/stats/cds_annots.gff.tmp ${DIR}/stats/cds_annots.gff"
 
