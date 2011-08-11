@@ -42,7 +42,7 @@
 # THE SOFTWARE.
 ##################################################
 usage(){
-    echo "Usage: `basename $0` directory label[chr4 or chrX etc...]";
+    echo "Usage: `basename $0` directory label[chr4 or chrX etc...] genomeName[root]";
     head -19 `basename $0`;
     exit 2
 }
@@ -70,13 +70,21 @@ runTrf(){
     fi
 }
 # check number of arguments
-if [ $# -ne 2 ];then
+if [ $# -lt 2 ];then
+    usage
+fi
+if [ $# -gt 3 ];then
     usage
 fi
 DIR=$1
 DIR=${DIR%/}
 DIR=$(readlink -f $DIR)
-LABEL=$2
+CHR_LABEL=$2
+if [ $# -eq 3];then
+    genomeName=$3
+else
+    genomeName='root'
+fi
 # check argument is a directory
 if [ ! -d $DIR  ]; then
     echo "Directory $DIR does not exist."
@@ -134,14 +142,14 @@ fi
 FASTA=$DIR/SEQ/*.fa
 mkdir -p $DIR/logs/
 
-run "evolver_evo -findns ${FASTA} -out_x $DIR/SEQ/seq.x.fa.tmp -out_gff ${DIR}/SEQ/seq.ns.gff -label_x ${LABEL} -log ${DIR}/logs/seq.findns.log"
+run "evolver_evo -findns ${FASTA} -out_x $DIR/SEQ/seq.x.fa.tmp -out_gff ${DIR}/SEQ/seq.ns.gff -label_x ${CHR_LABEL} -log ${DIR}/logs/seq.findns.log"
 run "mv ${DIR}/SEQ/seq.x.fa.tmp ${DIR}/SEQ/seq.x.fa"
 
-run "evolver_cvt -fromfasta ${DIR}/SEQ/seq.x.fa -torev ${DIR}/SEQ/seq.x.seq.rev.tmp -genome root -log ${DIR}/logs/seq.cvtrev.log"
+run "evolver_cvt -fromfasta ${DIR}/SEQ/seq.x.fa -torev ${DIR}/SEQ/seq.x.seq.rev.tmp -genome $genomeName -log ${DIR}/logs/seq.cvtrev.log"
 run "evolver_cvt -dumpchrids ${DIR}/SEQ/seq.x.seq.rev.tmp -log ${DIR}/logs/seq.seqlength.log"
 run "mv ${DIR}/SEQ/seq.x.seq.rev.tmp ${DIR}/SEQ/seq.x.seq.rev"
 
-run "evolver_cvt -fromfasta ${DIR}/SEQ/seq.x.fa -torev ${DIR}/SEQ/root.seq.rev.tmp -genome root"
+run "evolver_cvt -fromfasta ${DIR}/SEQ/seq.x.fa -torev ${DIR}/SEQ/root.seq.rev.tmp -genome $genomeName"
 run "mv ${DIR}/SEQ/root.seq.rev.tmp ${DIR}/SEQ/root.seq.rev"
 run "cp ${DIR}/SEQ/root.seq.rev ${DIR}/seq.rev"
 
@@ -178,7 +186,7 @@ run "mv ${DIR}/ANNOTATIONS/genes.cpg.gff.tmp ${DIR}/ANNOTATIONS/genes.cpg.gff"
 run "evolver_evo -xgff ${DIR}/ANNOTATIONS/genes.cpg.gff -gff_ns ${DIR}/SEQ/seq.ns.gff -out ${DIR}/ANNOTATIONS/genes.cpg.x.gff.tmp -log ${DIR}/logs/genes.xgffcpg.log"
 run "mv ${DIR}/ANNOTATIONS/genes.cpg.x.gff.tmp ${DIR}/ANNOTATIONS/genes.cpg.x.gff"
 
-SEQLEN=$(grep -a "  $LABEL" ${DIR}/logs/seq.seqlength.log | awk '{ print $3 }')
+SEQLEN=$(grep -a "  $CHR_LABEL" ${DIR}/logs/seq.seqlength.log | awk '{ print $3 }')
 run "evolver_evo -seed $RANDOM -genncces -excl_gff ${DIR}/ANNOTATIONS/genes.x.gff.tmp -length ${SEQLEN} -log ${DIR}/logs/genes.genncces.log -out ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp -model ${DIR}/MODEL/model.txt"
 run "mv ${DIR}/ANNOTATIONS/genes.ncces.gff.tmp ${DIR}/ANNOTATIONS/genes.ncces.gff"
 
@@ -233,3 +241,5 @@ run "mv ${DIR}/stats/annotstats.txt.tmp ${DIR}/stats/annotstats.txt"
 # TEST
 
 run "evolver_evo -valgenes ${DIR}/seq.rev -annots ${DIR}/annots.gff"
+
+echo "Work complete."
