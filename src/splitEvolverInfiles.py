@@ -11,6 +11,27 @@ coordinates for the gff files.
 At the moment, annotations that range between
 a split are simply dropped from the output. 
 
+HEY, READ THIS!
+You must, MUST, verify the NXE, CDS and UTR gene indexes
+all fall on the same new chromosomes ON YOUR OWN. This is
+not currently done in the code.
+
+Keep in mind that if you do this on an already created
+infile set, in order to make a revised infile set, you 
+will need to:
+* cat the annotsOut%d.gff files together into an annot.gff file
+* cat the fastaOut%d.fa files together into an seq.fa file
+* convert the seq.fa to seq.rev using 
+  evolver_cvt -fromfasta seq.fa -torev seq.rev
+* validate your new genome using
+  evolver_evo -valgenes seq.rev -annots annots.gff
+* recompute the necessary stats/ files with
+  touch stats/merged_root.stats.txt
+  egrep 'CDS|UTR' annots.gff > stats/cds_annots.gff
+  evolver_gff_cdsutr2exons.py stats/cds_annots.gff > stats/exons.gff
+  evolver_gff_exons2introns.py stats/exons.gff > stats/introns.gff
+  cat stats/introns.gff stats/exons.gff annots.gff > stats/expanded_annots.gff
+  evolver_evo -annotstats annots.gff -seq seq.rev -log stats/annotstats.txt
 """
 ##################################################
 # Copyright (C) 2009-2011 by
