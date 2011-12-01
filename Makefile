@@ -4,7 +4,7 @@ export SHELLOPTS=pipefail
 .PHONY: all clean test
 
 binPath = bin
-progs = infileMakefile singleRegionGenerator.sh splitEvolverInfiles.py subsetRemapGP.py
+progs = infileMakefile singleRegionGenerator.sh splitEvolverInfiles.py subsetRemapGP.py trfWrapper.py
 
 all: ${progs:%=${binPath}/%}
 
