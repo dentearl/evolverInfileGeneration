@@ -188,7 +188,7 @@ ${intPath}/chr%.trfannots.gff: ${intPath}/chr%.x.fa.dat.tmp
 ${intPath}/chr%.x.fa.dat.tmp: ${intPath}/chr%.x.fa
 	@mkdir -p $(dir $@) ${logPath}
 	LOCALDIR=$$(pwd); \
-		simCtrl_wrapperTRF.py $$LOCALDIR/${intPath}/chr$*.x.fa 2 7 7 80 10 50 500 -d -h
+		trfWrapper.py $$LOCALDIR/${intPath}/chr$*.x.fa 2 7 7 80 10 50 500 -d -h
 	mv ${intPath}/chr$*.x.fa.2.7.7.80.10.50.500.dat $@
 
 sequence: $(foreach chr, $(chrs), ${intPath}/chr${chr}.x.seq.rev) seq.rev
