@@ -26,12 +26,27 @@ def usage():
     print "USAGE: %s [trf options]" %(sys.argv[0])
     print __doc__
     sys.exit(2)
+def which(program):
+    """which() acts like the unix utility which, but is portable between os.
+    If the program does not exist in the PATH then 'None' is returned. 
+    """
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
+    fpath, fname = os.path.split(program)
+    if fpath != '':
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 def verifyPrograms(programs, verbose = False):
     """verifyPrograms(programs) takes a list of executable names, and acts on the list object
     to look up the full path to the executables, or if they are not found it raises an exeption
     """
-    from libSimControl import which
     if not isinstance(programs, list):
        raise TypeError('verifyPrograms takes a list of program '
                        'names, not %s.' % programs.__class__)
@@ -54,7 +69,6 @@ def verifyUnixLineEndings(prog, verbose = False):
     """ verifyUnixLineEndngs takes a program (no path) and checks the line endings to
     verify that they are unix (LF). If they are not, it raises a RuntimeError.
     """
-    from libSimControl import which
     if not isinstance(prog, str):
         raise TypeError('verifyUnixLineEndings takes a string, not %s.' % prog.__class__)
     p = which(prog)
