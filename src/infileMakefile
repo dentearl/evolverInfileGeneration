@@ -44,6 +44,7 @@ rootPath:= ${projectDir}/root
 logPath:= ${projectDir}/logs
 statsPath:= ${projectDir}/stats
 MODEL:= 
+DATABASE:=hg19
 GENOME:= root #$(shell basename $$(pwd))
 .PHONY: all rawData sequence annotations stats
 .SECONDARY: # leave this blank to force make to keep intermediate files
@@ -228,7 +229,7 @@ ${rawPath}/chr%.fa: ${rawPath}/chr%.fa.gz
 	mv $@.tmp $@
 ${rawPath}/chr%.fa.gz:
 	@mkdir -p $(dir $@) ${logPath}
-	curl http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr$*.fa.gz --create-dirs -o $@.tmp
+	curl http://hgdownload.cse.ucsc.edu/goldenPath/${DATABASE}/chromosomes/chr$*.fa.gz --create-dirs -o $@.tmp
 	mv $@.tmp $@
 ${rawPath}/:
 	@mkdir -p $(dir $@) ${logPath}
@@ -237,40 +238,17 @@ ${rawPath}/%.gtf: ${rawPath}/%.gp
 	@mkdir -p $(dir $@) ${logPath}
 	genePredToGtf file $< $@.tmp
 	mv $@.tmp $@
-# ifeq ($(testSet),YES)
-# ${rawPath}/mgcGenes.gp:
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	hgsql -Ne 'select * from mgcGenes' hg19 | cut -f 2- | (grep -a 'chr22_random' || true ) > $@.tmp
-# 	mv $@.tmp $@
-# ${rawPath}/knownGene.gp:
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	touch $@
-# ${rawPath}/knownGeneOld5.gp:
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	touch $@
-# ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	bedToGenePred $< $@.tmp
-# 	mv $@.tmp $@
-# ${rawPath}/cpgIslandExt.bed: 
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	hgsql -Ne 'select * from cpgIslandExt' hg19 |  cut -f 1-4 | (grep -a 'chr22_random' || true) > $@.tmp
-# 	mv $@.tmp $@
-# ${rawPath}/ensGene.gp:
-# 	@mkdir -p $(dir $@) ${logPath}
-# 	touch $@
-# else
 ${rawPath}/mgcGenes.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from mgcGenes' hg19 | cut -f 2- > $@.tmp
+	hgsql -Ne 'select * from mgcGenes' ${DATABASE} | cut -f 2- > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGene' hg19 | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select * from knownGene' ${DATABASE} | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGeneOld5.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGeneOld5' hg19 | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select * from knownGeneOld5' ${DATABASE} | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	@mkdir -p $(dir $@) ${logPath}
@@ -278,13 +256,12 @@ ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.bed: 
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from cpgIslandExt' hg19 |  cut -f 2-5 > $@.tmp
+	hgsql -Ne 'select * from cpgIslandExt' ${DATABASE} |  cut -f 2-5 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/ensGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from ensGene' hg19 | cut -f 2- > $@.tmp
+	hgsql -Ne 'select * from ensGene' ${DATABASE} | cut -f 2- > $@.tmp
 	mv $@.tmp $@
-#endif
 
 clean:
 	rm -rf ${rawPath}/ ${logPath}/ ${intPath}/ ${rootPath}/ ${statsPath}/ seq.rev annots.gff
