@@ -43,7 +43,7 @@ intPath:= ${projectDir}/intermediates
 rootPath:= ${projectDir}/root
 logPath:= ${projectDir}/logs
 statsPath:= ${projectDir}/stats
-MODEL:= ~/evolver/myToy/gParams/model.txt
+MODEL:= 
 GENOME:= root #$(shell basename $$(pwd))
 .PHONY: all rawData sequence annotations stats
 .SECONDARY: # leave this blank to force make to keep intermediate files
@@ -56,9 +56,9 @@ testSet:=NO
 ifeq ($(testSet), YES)
 	chrs:= 22_random 19_random
 else
-	chrs:= 20 21 22
+	chrs:= 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X
 endif
-gtfs:= mgcGenes knownGene knownGeneOld2 cpgIslandExt ensGene
+gtfs:= mgcGenes knownGene knownGeneOld5 cpgIslandExt ensGene
 #
 # DO NOT EDIT BELOW THIS LINE
 ##################################################
@@ -176,7 +176,7 @@ ${intPath}/chr%.genes.unsorted.gtf: $(foreach gtf, $(gtfs), $(join ${rawPath}/${
 		sed -e "s/_id \"/_id \"ucsc./g"     >  $@.tmp
 	(grep -Pa '^chr$*\t' ${rawPath}/mgcGenes.gtf || true)      | evolver_gtfStopCodonMerger.py |\
 		sed -e "s/_id \"/_id \"mgc./g"      >> $@.tmp
-	(grep -Pa '^chr$*\t' ${rawPath}/knownGeneOld2.gtf || true) | evolver_gtfStopCodonMerger.py |\
+	(grep -Pa '^chr$*\t' ${rawPath}/knownGeneOld5.gtf || true) | evolver_gtfStopCodonMerger.py |\
 		sed -e "s/_id \"/_id \"oldknown./g" >> $@.tmp
 	(grep -Pa '^chr$*\t' ${rawPath}/ensGene.gtf || true)       | evolver_gtfStopCodonMerger.py |\
 		sed -e "s/_id \"/_id \"ens./g"      >> $@.tmp
@@ -228,7 +228,7 @@ ${rawPath}/chr%.fa: ${rawPath}/chr%.fa.gz
 	mv $@.tmp $@
 ${rawPath}/chr%.fa.gz:
 	@mkdir -p $(dir $@) ${logPath}
-	curl http://hgdownload.cse.ucsc.edu/goldenPath/hg18/chromosomes/chr$*.fa.gz --create-dirs -o $@.tmp
+	curl http://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/chr$*.fa.gz --create-dirs -o $@.tmp
 	mv $@.tmp $@
 ${rawPath}/:
 	@mkdir -p $(dir $@) ${logPath}
@@ -240,12 +240,12 @@ ${rawPath}/%.gtf: ${rawPath}/%.gp
 # ifeq ($(testSet),YES)
 # ${rawPath}/mgcGenes.gp:
 # 	@mkdir -p $(dir $@) ${logPath}
-# 	hgsql -Ne 'select * from mgcGenes' hg18 | cut -f 2- | (grep -a 'chr22_random' || true ) > $@.tmp
+# 	hgsql -Ne 'select * from mgcGenes' hg19 | cut -f 2- | (grep -a 'chr22_random' || true ) > $@.tmp
 # 	mv $@.tmp $@
 # ${rawPath}/knownGene.gp:
 # 	@mkdir -p $(dir $@) ${logPath}
 # 	touch $@
-# ${rawPath}/knownGeneOld2.gp:
+# ${rawPath}/knownGeneOld5.gp:
 # 	@mkdir -p $(dir $@) ${logPath}
 # 	touch $@
 # ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
@@ -254,7 +254,7 @@ ${rawPath}/%.gtf: ${rawPath}/%.gp
 # 	mv $@.tmp $@
 # ${rawPath}/cpgIslandExt.bed: 
 # 	@mkdir -p $(dir $@) ${logPath}
-# 	hgsql -Ne 'select * from cpgIslandExt' hg18 |  cut -f 1-4 | (grep -a 'chr22_random' || true) > $@.tmp
+# 	hgsql -Ne 'select * from cpgIslandExt' hg19 |  cut -f 1-4 | (grep -a 'chr22_random' || true) > $@.tmp
 # 	mv $@.tmp $@
 # ${rawPath}/ensGene.gp:
 # 	@mkdir -p $(dir $@) ${logPath}
@@ -262,15 +262,15 @@ ${rawPath}/%.gtf: ${rawPath}/%.gp
 # else
 ${rawPath}/mgcGenes.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from mgcGenes' hg18 | cut -f 2- > $@.tmp
+	hgsql -Ne 'select * from mgcGenes' hg19 | cut -f 2- > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGene' hg18 | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select * from knownGene' hg19 | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
-${rawPath}/knownGeneOld2.gp:
+${rawPath}/knownGeneOld5.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGeneOld2' hg18 | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select * from knownGeneOld5' hg19 | cut -f 1-10 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	@mkdir -p $(dir $@) ${logPath}
@@ -278,11 +278,11 @@ ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.bed: 
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from cpgIslandExt' hg18 |  cut -f 1-4 > $@.tmp
+	hgsql -Ne 'select * from cpgIslandExt' hg19 |  cut -f 2-5 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/ensGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from ensGene' hg18 | cut -f 2- > $@.tmp
+	hgsql -Ne 'select * from ensGene' hg19 | cut -f 2- > $@.tmp
 	mv $@.tmp $@
 #endif
 
