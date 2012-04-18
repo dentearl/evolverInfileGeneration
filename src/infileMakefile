@@ -240,15 +240,15 @@ ${rawPath}/%.gtf: ${rawPath}/%.gp
 	mv $@.tmp $@
 ${rawPath}/mgcGenes.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from mgcGenes' ${DATABASE} | cut -f 2- > $@.tmp
+	hgsql -Ne 'select name,chrom,strand,txStart,txEnd,cdsStart,cdsEnd,exonCount,exonStarts,exonEnds,score,name2,cdsStartStat,cdsEndStat,exonFrames from mgcGenes' hg19 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGene' ${DATABASE} | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select name,chrom,strand,txStart,txEnd,cdsStart,cdsEnd,exonCount,exonStarts,exonEnds from knownGene' hg19 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/knownGeneOld5.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from knownGeneOld5' ${DATABASE} | cut -f 1-10 > $@.tmp
+	hgsql -Ne 'select name,chrom,strand,txStart,txEnd,cdsStart,cdsEnd,exonCount,exonStarts,exonEnds from knownGeneOld5' hg19 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	@mkdir -p $(dir $@) ${logPath}
@@ -256,11 +256,11 @@ ${rawPath}/cpgIslandExt.gp: ${rawPath}/cpgIslandExt.bed
 	mv $@.tmp $@
 ${rawPath}/cpgIslandExt.bed: 
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from cpgIslandExt' ${DATABASE} |  cut -f 2-5 > $@.tmp
+	hgsql -Ne 'select chrom,chromStart,chromEnd,name from cpgIslandExt' hg19 |  cut -f 2-5 > $@.tmp
 	mv $@.tmp $@
 ${rawPath}/ensGene.gp:
 	@mkdir -p $(dir $@) ${logPath}
-	hgsql -Ne 'select * from ensGene' ${DATABASE} | cut -f 2- > $@.tmp
+	hgsql -Ne 'select name,chrom,strand,txStart,txEnd,cdsStart,cdsEnd,exonCount,exonStarts,exonEnds,score,name2,cdsStartStat,cdsEndStat,exonFrames from ensGene' hg19 | cut -f 2- > $@.tmp
 	mv $@.tmp $@
 
 clean:
